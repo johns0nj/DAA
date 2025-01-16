@@ -1,34 +1,29 @@
+import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report
 
-# 假设您已经有了数据
-# X 是特征数据，y 是标签
-X = np.random.rand(100, 4)  # 示例：100个样本，每个样本4个特征
-y = np.random.randint(0, 2, 100)  # 示例：二分类问题的标签
+# 生成围绕0波动的数据
+np.random.seed(42)  # 设置随机种子以保证结果可重现
+data = pd.Series(np.random.normal(0, 1, 20))  # 生成20个标准正态分布的数据
 
-# 60-40分割数据集
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, 
-    test_size=0.4,  # 40%作为测试集
-    random_state=42  # 设置随机种子，确保结果可重复
-)
+# 计算扩展 Z 分数
+expanding_mean = data.expanding().mean()
+expanding_std = data.expanding().std()
+expanding_z_score = (data - expanding_mean) / expanding_std
 
-# 创建随机森林分类器
-rf_classifier = RandomForestClassifier(
-    n_estimators=100,  # 树的数量
-    random_state=42
-)
+# 绘制 Z 分数
+plt.figure(figsize=(10, 5))
+plt.plot(expanding_z_score, marker='o', linestyle='-', color='blue', label='Expanding Z Score')
+plt.title('Expanding Z Score (围绕0波动)')
+plt.xlabel('时间点')
+plt.ylabel('Z Score')
+plt.axhline(0, color='red', linestyle='--', linewidth=0.8)  # 添加零线
+plt.axhline(2, color='gray', linestyle=':', linewidth=0.8)  # 添加上边界
+plt.axhline(-2, color='gray', linestyle=':', linewidth=0.8)  # 添加下边界
+plt.legend()
+plt.grid(True)
+plt.show()
 
-# 训练模型
-rf_classifier.fit(X_train, y_train)
-
-# 预测
-y_pred = rf_classifier.predict(X_test)
-
-# 评估模型
-accuracy = accuracy_score(y_test, y_pred)
-print(f"模型准确率: {accuracy:.2f}")
-print("\n分类报告:")
-print(classification_report(y_test, y_pred))
+# 打印统计信息
+print("\nZ分数统计信息：")
+print(expanding_z_score.describe())
